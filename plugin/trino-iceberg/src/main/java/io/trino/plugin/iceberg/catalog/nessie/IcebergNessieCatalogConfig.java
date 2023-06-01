@@ -20,12 +20,18 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import java.net.URI;
+import java.util.Optional;
 
 public class IcebergNessieCatalogConfig
 {
     private String defaultReferenceName = "main";
     private String defaultWarehouseDir;
     private URI serverUri;
+    private Optional<AuthenticationType> authenticationType = Optional.empty();
+    private Optional<String> bearerToken = Optional.empty();
+    private Optional<Integer> readTimeoutMillis = Optional.empty();
+    private Optional<Integer> connectTimeoutMillis = Optional.empty();
+    private boolean compressionEnabled = true;
 
     @NotNull
     public String getDefaultReferenceName()
@@ -67,5 +73,70 @@ public class IcebergNessieCatalogConfig
     {
         this.defaultWarehouseDir = defaultWarehouseDir;
         return this;
+    }
+
+    @Config("iceberg.nessie-catalog.auth.type")
+    @ConfigDescription("The authentication type to use. Available values are NONE | BEARER. Default: NONE")
+    public IcebergNessieCatalogConfig setAuthenticationType(AuthenticationType authenticationType)
+    {
+        this.authenticationType = Optional.ofNullable(authenticationType);
+        return this;
+    }
+
+    public Optional<AuthenticationType> getAuthenticationType()
+    {
+        return authenticationType;
+    }
+
+    @Config("iceberg.nessie-catalog.auth.bearer.token")
+    @ConfigDescription("The token to use with BEARER authentication")
+    public IcebergNessieCatalogConfig setBearerToken(String token)
+    {
+        this.bearerToken = Optional.ofNullable(token);
+        return this;
+    }
+
+    public Optional<String> getBearerToken()
+    {
+        return bearerToken;
+    }
+
+    @Config("iceberg.nessie-catalog.read-timeout-ms")
+    @ConfigDescription("The read timeout in milliseconds for the client. Default: 25000")
+    public IcebergNessieCatalogConfig setReadTimeoutMillis(Integer readTimeoutMillis)
+    {
+        this.readTimeoutMillis = Optional.ofNullable(readTimeoutMillis);
+        return this;
+    }
+
+    public Optional<Integer> getReadTimeoutMillis()
+    {
+        return readTimeoutMillis;
+    }
+
+    @Config("iceberg.nessie-catalog.connect-timeout-ms")
+    @ConfigDescription("The connection timeout in milliseconds for the client. Default: 5000")
+    public IcebergNessieCatalogConfig setConnectTimeoutMillis(Integer connectTimeoutMillis)
+    {
+        this.connectTimeoutMillis = Optional.ofNullable(connectTimeoutMillis);
+        return this;
+    }
+
+    public Optional<Integer> getConnectTimeoutMillis()
+    {
+        return connectTimeoutMillis;
+    }
+
+    @Config("iceberg.nessie-catalog.compression-enabled")
+    @ConfigDescription("Configure whether compression should be enabled or not. Default: true")
+    public IcebergNessieCatalogConfig setCompressionEnabled(boolean compressionEnabled)
+    {
+        this.compressionEnabled = compressionEnabled;
+        return this;
+    }
+
+    public boolean isCompressionEnabled()
+    {
+        return compressionEnabled;
     }
 }

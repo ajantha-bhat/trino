@@ -31,6 +31,11 @@ public class TestIcebergNessieCatalogConfig
         assertRecordedDefaults(recordDefaults(IcebergNessieCatalogConfig.class)
                 .setDefaultWarehouseDir(null)
                 .setServerUri(null)
+                .setAuthenticationType(null)
+                .setBearerToken(null)
+                .setReadTimeoutMillis(null)
+                .setConnectTimeoutMillis(null)
+                .setCompressionEnabled(true)
                 .setDefaultReferenceName("main"));
     }
 
@@ -41,12 +46,22 @@ public class TestIcebergNessieCatalogConfig
                 .put("iceberg.nessie-catalog.default-warehouse-dir", "/tmp")
                 .put("iceberg.nessie-catalog.uri", "http://localhost:xxx/api/v1")
                 .put("iceberg.nessie-catalog.ref", "someRef")
+                .put("iceberg.nessie-catalog.auth.type", "NONE")
+                .put("iceberg.nessie-catalog.auth.bearer.token", "bearerToken")
+                .put("iceberg.nessie-catalog.compression-enabled", "false")
+                .put("iceberg.nessie-catalog.connect-timeout-ms", "123")
+                .put("iceberg.nessie-catalog.read-timeout-ms", "456")
                 .buildOrThrow();
 
         IcebergNessieCatalogConfig expected = new IcebergNessieCatalogConfig()
                 .setDefaultWarehouseDir("/tmp")
                 .setServerUri(URI.create("http://localhost:xxx/api/v1"))
-                .setDefaultReferenceName("someRef");
+                .setDefaultReferenceName("someRef")
+                .setAuthenticationType(AuthenticationType.NONE)
+                .setBearerToken("bearerToken")
+                .setCompressionEnabled(false)
+                .setConnectTimeoutMillis(123)
+                .setReadTimeoutMillis(456);
 
         assertFullMapping(properties, expected);
     }

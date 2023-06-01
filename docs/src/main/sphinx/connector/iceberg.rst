@@ -245,6 +245,24 @@ Property Name                                        Description
 ``iceberg.nessie-catalog.default-warehouse-dir``     Default warehouse directory for schemas created without an
                                                      explicit ``location`` property.
                                                      Example: ``/tmp``
+
+``iceberg.nessie-catalog.auth.type``                 The authentication type to use.
+                                                     Available values are ``NONE`` or ``BEARER``.
+                                                     Example: ``BEARER``
+
+``iceberg.nessie-catalog.auth.bearer.token``         The token to use with ``BEARER`` authentication.
+                                                     Example: ``SXVLUXUhIExFQ0tFUiEK``
+
+``iceberg.nessie-catalog.read-timeout-ms``           The read timeout in milliseconds for requests
+                                                     to the Nessie server.
+                                                     Example: ``5000``
+
+``iceberg.nessie-catalog.connect-timeout-ms``        The connection timeout in milliseconds for connection
+                                                     connection requests to the Nessie server.
+                                                     Example: ``10000``
+
+``iceberg.nessie-catalog.compression-enabled``       Configure whether compression should be enabled or not for
+                                                     requests to the Nessie server, defaults to ``true``.
 ==================================================== ============================================================
 
 .. code-block:: text
@@ -253,7 +271,8 @@ Property Name                                        Description
     iceberg.catalog.type=nessie
     iceberg.nessie-catalog.uri=https://localhost:19120/api/v1
     iceberg.nessie-catalog.default-warehouse-dir=/tmp
-
+    iceberg.nessie-catalog.auth.type=BEARER
+    iceberg.nessie-catalog.auth.bearer.token=SXVLUXUhIExFQ0tFUiEK
 
 .. _iceberg-jdbc-catalog:
 
