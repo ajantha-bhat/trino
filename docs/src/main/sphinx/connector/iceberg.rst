@@ -254,6 +254,22 @@ properties:
   * - ``iceberg.nessie-catalog.default-warehouse-dir``
     - Default warehouse directory for schemas created without an explicit
       ``location`` property. Example: ``/tmp``
+  * - ``iceberg.nessie-catalog.authentication.type``
+    - The authentication type to use.
+      Available values are ``NONE`` or ``BEARER``.
+      Example: ``BEARER``
+  * - ``iceberg.nessie-catalog.authentication.token``
+    - The token to use with ``BEARER`` authentication.
+      Example: ``SXVLUXUhIExFQ0tFUiEK``
+  * - ``iceberg.nessie-catalog.read-timeout``
+    - The read timeout duration for requests to the Nessie server.
+      Example: ``5s``
+  * - ``iceberg.nessie-catalog.connection-timeout``
+    - The connection timeout duration for connection requests to the Nessie server.
+      Example: ``1m``
+  * - ``iceberg.nessie-catalog.compression-enabled``
+    - Configure whether compression should be enabled or not for
+      requests to the Nessie server, defaults to ``true``.
 
 .. code-block:: text
 
@@ -261,6 +277,8 @@ properties:
     iceberg.catalog.type=nessie
     iceberg.nessie-catalog.uri=https://localhost:19120/api/v1
     iceberg.nessie-catalog.default-warehouse-dir=/tmp
+    iceberg.nessie-catalog.authentication.type=BEARER
+    iceberg.nessie-catalog.authentication.token=SXVLUXUhIExFQ0tFUiEK
 
 .. _iceberg-jdbc-catalog:
 

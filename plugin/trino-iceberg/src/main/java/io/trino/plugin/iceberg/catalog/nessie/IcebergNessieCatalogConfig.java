@@ -15,17 +15,34 @@ package io.trino.plugin.iceberg.catalog.nessie;
 
 import io.airlift.configuration.Config;
 import io.airlift.configuration.ConfigDescription;
+import io.airlift.configuration.ConfigSecuritySensitive;
+import io.airlift.units.Duration;
+import io.airlift.units.MinDuration;
+import org.projectnessie.client.NessieConfigConstants;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import java.net.URI;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 public class IcebergNessieCatalogConfig
 {
+    public enum Security
+    {
+        NONE,
+        BEARER
+    }
+
     private String defaultReferenceName = "main";
     private String defaultWarehouseDir;
     private URI serverUri;
+    private Security security = Security.NONE;
+    private Optional<String> bearerToken = Optional.empty();
+    private Duration readTimeout = new Duration(NessieConfigConstants.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+    private Duration connectionTimeout = new Duration(NessieConfigConstants.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+    private boolean compressionEnabled = true;
 
     @NotNull
     public String getDefaultReferenceName()
@@ -66,6 +83,74 @@ public class IcebergNessieCatalogConfig
     public IcebergNessieCatalogConfig setDefaultWarehouseDir(String defaultWarehouseDir)
     {
         this.defaultWarehouseDir = defaultWarehouseDir;
+        return this;
+    }
+
+    public Security getSecurity()
+    {
+        return security;
+    }
+
+    @Config("iceberg.nessie-catalog.authentication.type")
+    @ConfigDescription("The authentication type to use")
+    public IcebergNessieCatalogConfig setSecurity(Security security)
+    {
+        this.security = security;
+        return this;
+    }
+
+    public Optional<String> getBearerToken()
+    {
+        return bearerToken;
+    }
+
+    @Config("iceberg.nessie-catalog.authentication.token")
+    @ConfigDescription("The token to use with BEARER authentication")
+    @ConfigSecuritySensitive
+    public IcebergNessieCatalogConfig setBearerToken(String token)
+    {
+        this.bearerToken = Optional.ofNullable(token);
+        return this;
+    }
+
+    @MinDuration("1ms")
+    public Duration getReadTimeout()
+    {
+        return readTimeout;
+    }
+
+    @Config("iceberg.nessie-catalog.read-timeout")
+    @ConfigDescription("The read timeout for the client.")
+    public IcebergNessieCatalogConfig setReadTimeout(Duration readTimeout)
+    {
+        this.readTimeout = readTimeout;
+        return this;
+    }
+
+    @MinDuration("1ms")
+    public Duration getConnectionTimeout()
+    {
+        return connectionTimeout;
+    }
+
+    @Config("iceberg.nessie-catalog.connection-timeout")
+    @ConfigDescription("The connection timeout for the client.")
+    public IcebergNessieCatalogConfig setConnectionTimeout(Duration connectionTimeout)
+    {
+        this.connectionTimeout = connectionTimeout;
+        return this;
+    }
+
+    public boolean isCompressionEnabled()
+    {
+        return compressionEnabled;
+    }
+
+    @Config("iceberg.nessie-catalog.compression-enabled")
+    @ConfigDescription("Configure whether compression should be enabled or not.")
+    public IcebergNessieCatalogConfig setCompressionEnabled(boolean compressionEnabled)
+    {
+        this.compressionEnabled = compressionEnabled;
         return this;
     }
 }

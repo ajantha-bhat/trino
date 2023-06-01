@@ -23,9 +23,12 @@ import io.trino.plugin.iceberg.catalog.IcebergTableOperationsProvider;
 import io.trino.plugin.iceberg.catalog.TrinoCatalogFactory;
 import org.apache.iceberg.nessie.NessieIcebergClient;
 import org.projectnessie.client.api.NessieApiV1;
+import org.projectnessie.client.auth.BearerAuthenticationProvider;
 import org.projectnessie.client.http.HttpClientBuilder;
 
 import static io.airlift.configuration.ConfigBinder.configBinder;
+import static io.trino.plugin.iceberg.catalog.nessie.IcebergNessieCatalogConfig.Security.BEARER;
+import static java.lang.Math.toIntExact;
 import static org.weakref.jmx.guice.ExportBinder.newExporter;
 
 public class IcebergNessieCatalogModule
@@ -43,15 +46,18 @@ public class IcebergNessieCatalogModule
 
     @Provides
     @Singleton
-    public static NessieIcebergClient createNessieIcebergClient(IcebergNessieCatalogConfig icebergNessieCatalogConfig)
+    public static NessieIcebergClient createNessieIcebergClient(IcebergNessieCatalogConfig config)
     {
-        return new NessieIcebergClient(
-                HttpClientBuilder.builder()
-                        .withUri(icebergNessieCatalogConfig.getServerUri())
-                        .withEnableApiCompatibilityCheck(false)
-                        .build(NessieApiV1.class),
-                icebergNessieCatalogConfig.getDefaultReferenceName(),
-                null,
-                ImmutableMap.of());
+        HttpClientBuilder builder = HttpClientBuilder.builder()
+                .withUri(config.getServerUri())
+                .withDisableCompression(!config.isCompressionEnabled())
+                .withEnableApiCompatibilityCheck(false);
+
+        builder.withReadTimeout(toIntExact(config.getReadTimeout().toMillis()));
+        builder.withConnectionTimeout(toIntExact(config.getConnectionTimeout().toMillis()));
+        if (config.getSecurity().equals(BEARER)) {
+            config.getBearerToken().ifPresent(token -> builder.withAuthentication(BearerAuthenticationProvider.create(token)));
+        }
+        return new NessieIcebergClient(builder.build(NessieApiV1.class), config.getDefaultReferenceName(), null, ImmutableMap.of());
     }
 }
