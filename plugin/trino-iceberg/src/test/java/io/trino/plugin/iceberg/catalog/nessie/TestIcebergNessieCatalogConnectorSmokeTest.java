@@ -20,10 +20,12 @@ import io.trino.plugin.iceberg.BaseIcebergConnectorSmokeTest;
 import io.trino.plugin.iceberg.IcebergConfig;
 import io.trino.plugin.iceberg.IcebergQueryRunner;
 import io.trino.plugin.iceberg.SchemaInitializer;
+import io.trino.plugin.iceberg.containers.KeycloakContainer;
 import io.trino.plugin.iceberg.containers.NessieContainer;
 import io.trino.testing.QueryRunner;
 import io.trino.testing.TestingConnectorBehavior;
 import io.trino.tpch.TpchTable;
+import org.testcontainers.containers.Network;
 import org.testng.SkipException;
 import org.testng.annotations.AfterClass;
 
@@ -59,7 +61,21 @@ public class TestIcebergNessieCatalogConnectorSmokeTest
     protected QueryRunner createQueryRunner()
             throws Exception
     {
-        NessieContainer nessieContainer = closeAfterClass(NessieContainer.builder().build());
+        Network network = Network.newNetwork();
+
+        KeycloakContainer keycloakContainer =
+                closeAfterClass(KeycloakContainer.builder().withNetwork(network).build());
+        keycloakContainer.start();
+
+        ImmutableMap<String, String> envVars = ImmutableMap.<String, String>builder()
+                .putAll(NessieContainer.defaultEnvVars())
+                .put("QUARKUS_OIDC_AUTH_SERVER_URL", KeycloakContainer.getUrlWithHostName() + "/realms/master")
+                .put("QUARKUS_OIDC_CLIENT_ID", "projectnessie")
+                .put("NESSIE_SERVER_AUTHENTICATION_ENABLED", "true")
+                .buildOrThrow();
+
+        NessieContainer nessieContainer =
+                closeAfterClass(NessieContainer.builder().withEnvVars(envVars).withNetwork(network).build());
         nessieContainer.start();
 
         tempDir = Files.createTempDirectory("test_trino_nessie_catalog");
@@ -72,6 +88,8 @@ public class TestIcebergNessieCatalogConnectorSmokeTest
                                 "iceberg.catalog.type", "nessie",
                                 "iceberg.nessie-catalog.uri", nessieContainer.getRestApiUri(),
                                 "iceberg.nessie-catalog.default-warehouse-dir", tempDir.toString(),
+                                "iceberg.nessie-catalog.authentication.type", "BEARER",
+                                "iceberg.nessie-catalog.authentication.token", keycloakContainer.getAccessToken(),
                                 "iceberg.writer-sort-buffer-size", "1MB"))
                 .setSchemaInitializer(
                         SchemaInitializer.builder()
