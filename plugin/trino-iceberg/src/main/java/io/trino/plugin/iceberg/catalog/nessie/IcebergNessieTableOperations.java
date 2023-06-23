@@ -81,6 +81,14 @@ public class IcebergNessieTableOperations
     }
 
     @Override
+    protected void refreshFromMetadataLocation(String newLocation)
+    {
+        super.refreshFromMetadataLocation(newLocation, location ->
+                nessieClient.loadTableMetadataWithNessieSpecificProperties(
+                        location, table, io(), getSchemaTableName().toString()));
+    }
+
+    @Override
     protected String getRefreshedLocation(boolean invalidateCaches)
     {
         table = nessieClient.table(toIdentifier(new SchemaTableName(database, tableName)));
